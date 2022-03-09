@@ -6,7 +6,6 @@ import miniPL.Expr.Assign;
 import miniPL.Expr.Binary;
 import miniPL.Expr.Grouping;
 import miniPL.Expr.Literal;
-import miniPL.Expr.Logical;
 import miniPL.Expr.Unary;
 import miniPL.Expr.Variable;
 import miniPL.Stmt.Assert;
@@ -79,12 +78,6 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     @Override
     public Object visitLiteralExpr(Literal expr) {
         return expr.value;
-    }
-
-    @Override
-    public Object visitLogicalExpr(Logical expr) {
-        // TODO Auto-generated method stub
-        return null;
     }
 
     @Override

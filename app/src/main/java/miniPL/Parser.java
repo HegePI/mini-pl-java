@@ -72,6 +72,7 @@ public class Parser {
         consume(TokenType.LPAREN, "Expect '(' in assert statement");
         Expr expr = expression();
         consume(TokenType.RPAREN, "Unclosed '(', expect ')'");
+        consume(TokenType.SEMICOLON, "Expect ';' after assert statement");
         return new Stmt.Assert(expr);
     }
 
