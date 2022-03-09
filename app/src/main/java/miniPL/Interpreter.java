@@ -125,12 +125,16 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
     @Override
     public Void visitForStmt(For stmt) throws Exception {
-        Integer value = (int) evaluate(stmt.left);
-        env.define("test", value);
+
+        double value = (double) evaluate(stmt.left);
+        env.define(stmt.varIdent.lexeme, value);
+
         while (isInRange(stmt)) {
             for (Stmt s : stmt.body) {
                 execute(s);
             }
+            double lastValue = (double) env.get(stmt.varIdent);
+            env.define(stmt.varIdent.lexeme, lastValue + 1);
         }
         return null;
     }
@@ -189,14 +193,9 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     }
 
     private boolean isInRange(Stmt.For stmt) throws Exception {
-        Object l = evaluate(stmt.left);
-        Object r = evaluate(stmt.right);
-
-        if (l instanceof Double && r instanceof Double) {
-            return (double) l <= (double) r;
-        } else {
-            return false;
-        }
+        double value = (double) env.get(stmt.varIdent);
+        double r = (double) evaluate(stmt.right);
+        return value < r;
     }
 
     private String stringify(Object object) {

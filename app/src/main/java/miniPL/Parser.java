@@ -97,7 +97,7 @@ public class Parser {
 
     private Stmt forStatement() throws Exception {
 
-        Expr varIdent = expression();
+        Token varIdent = consume(TokenType.IDENTIFIER, "Expect identifier after \"for\" statement");
         consume(TokenType.IN, "Expect \"in\" after variable");
         Expr left = expression();
         consume(TokenType.DOT, "Expect \"..\" to define range");

@@ -61,14 +61,14 @@ public abstract class Stmt {
     }
 
     static class For extends Stmt {
-        For(Expr varIdent, Expr left, Expr right, List<Stmt> body) {
+        For(Token varIdent, Expr left, Expr right, List<Stmt> body) {
             this.varIdent = varIdent;
             this.left = left;
             this.right = right;
             this.body = body;
         }
 
-        final Expr varIdent;
+        final Token varIdent;
         final Expr left;
         final Expr right;
         final List<Stmt> body;
