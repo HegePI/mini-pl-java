@@ -7,9 +7,11 @@ import org.junit.jupiter.api.Test;
 
 public class ParserTests {
 
+    String TEST_FILE = "/home/heikki/koulu/compilers/mini-pl-java/parsing.test.mpl";
+
     @Test
     public void readsTokens() throws Exception {
-        String content = Files.readString(Path.of("/home/heikki/koulu/compilers/mini-pl-java/test.mpl"));
+        String content = Files.readString(Path.of(TEST_FILE));
 
         Scanner sc = new Scanner(content);
 

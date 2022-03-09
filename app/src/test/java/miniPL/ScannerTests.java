@@ -10,9 +10,11 @@ import java.util.List;
 
 public class ScannerTests {
 
+    String TEST_FILE = "/home/heikki/koulu/compilers/mini-pl-java/scanning.test.mpl";
+
     @Test
     public void scansTokens() throws Exception {
-        String content = Files.readString(Path.of("/home/heikki/koulu/compilers/mini-pl-java/test.mpl"));
+        String content = Files.readString(Path.of(TEST_FILE));
 
         Scanner sc = new Scanner(content);
 

@@ -14,17 +14,72 @@ public class Parser {
     public List<Stmt> parse() throws Exception {
         List<Stmt> l = new ArrayList<>();
         while (!isAtEnd()) {
-            l.add(statements());
+            l.add(declaration());
         }
         return l;
     }
 
-    private Stmt statements() throws Exception {
+    private Stmt declaration() throws Exception {
+        try {
+            if (match(TokenType.VAR)) {
+                return varDeclaration();
+            }
+            return statement();
+        } catch (Exception e) {
+            throw new Exception(e.getMessage());
+        }
+    }
+
+    private Stmt varDeclaration() throws Exception {
+        Token name = consume(TokenType.IDENTIFIER, "Expect variable name.");
+
+        consume(TokenType.DDOT, "Expect ':' after variable identifier to define type");
+
+        Token type = null;
+        if (match(TokenType.INT)) {
+            type = consume(TokenType.INT, "");
+        } else if (match(TokenType.STRING)) {
+            type = consume(TokenType.STRING, "");
+        }
+
+        Expr initializer = null;
+        if (match(TokenType.EQ)) {
+            initializer = expression();
+        }
+
+        consume(TokenType.SEMICOLON, "Expect ';' after variable declaration.");
+        return new Stmt.Var(name, type, initializer);
+    }
+
+    private Stmt statement() throws Exception {
         if (match(TokenType.PRINT)) {
             return printStatement();
         }
+        if (match(TokenType.FOR)) {
+            return forStatement();
+        }
+        if (match(TokenType.READ)) {
+            return readStatement();
+        }
+        if (match(TokenType.ASSERT)) {
+            return assertStatement();
+        }
 
         return expressionStatement();
+    }
+
+    private Stmt assertStatement() throws Exception {
+        consume(TokenType.LPAREN, "Expect '(' in assert statement");
+        Expr expr = expression();
+        consume(TokenType.RPAREN, "Unclosed '(', expect ')'");
+        return new Stmt.Assert(expr);
+    }
+
+    private Stmt readStatement() throws Exception {
+        Token ident = consume(TokenType.IDENTIFIER, "Expect identifier to store into red input value");
+
+        consume(TokenType.SEMICOLON, "Expect ';' after read statement");
+        return new Stmt.Read(ident);
     }
 
     private Stmt expressionStatement() throws Exception {
@@ -37,6 +92,28 @@ public class Parser {
         Expr value = expression();
         consume(TokenType.SEMICOLON, "Expect ';' after value.");
         return new Stmt.Print(value);
+    }
+
+    private Stmt forStatement() throws Exception {
+
+        Expr varIdent = expression();
+        consume(TokenType.IN, "Expect \"in\" after variable");
+        Expr left = expression();
+        consume(TokenType.DOT, "Expect \"..\" to define range");
+        consume(TokenType.DOT, "Expect \"..\" to define range");
+        Expr right = expression();
+        consume(TokenType.DO, "Expect keyword \"for\"");
+
+        List<Stmt> body = new ArrayList<Stmt>();
+        while (peek().type != TokenType.END) {
+            body.add(statement());
+        }
+
+        consume(TokenType.END, "Expect \"end for\" to end for loop");
+        consume(TokenType.FOR, "Expect \"end for\" to end for loop");
+
+        return new Stmt.For(varIdent, left, right, body);
+
     }
 
     private Expr equality() throws Exception {
@@ -111,11 +188,32 @@ public class Parser {
             consume(TokenType.RPAREN, "Expect ')' after expression.");
             return new Expr.Grouping(expr);
         }
+        if (match(TokenType.IDENTIFIER)) {
+            return new Expr.Variable(previous());
+        }
+        if (match(TokenType.STRINGLITERAL)) {
+            return new Expr.Literal(previous().literal);
+        }
         throw new Exception("WTF");
     }
 
     private Expr expression() throws Exception {
-        return equality();
+        return assignment();
+    }
+
+    private Expr assignment() throws Exception {
+        Expr expr = equality();
+
+        if (match(TokenType.EQ)) {
+            // Token equals = previous();
+            Expr value = assignment();
+            if (expr instanceof Expr.Variable) {
+                Token name = ((Expr.Variable) expr).name;
+                return new Expr.Assign(name, value);
+            }
+            throw new Exception("Invalid asignment type");
+        }
+        return expr;
     }
 
     private Token consume(TokenType type, String message) throws Exception {

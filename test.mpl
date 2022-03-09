@@ -1,2 +1,3 @@
-print 2 + 3;
-print 2 * 3;
+for x in 0..10 do
+    print "Hello, world!";
+end for

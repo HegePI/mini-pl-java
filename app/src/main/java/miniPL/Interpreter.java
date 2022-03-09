@@ -9,12 +9,19 @@ import miniPL.Expr.Literal;
 import miniPL.Expr.Logical;
 import miniPL.Expr.Unary;
 import miniPL.Expr.Variable;
+import miniPL.Stmt.Assert;
 import miniPL.Stmt.Expression;
+import miniPL.Stmt.For;
 import miniPL.Stmt.Print;
+import miniPL.Stmt.Read;
 import miniPL.Stmt.Var;
-import miniPL.Stmt.While;
+import java.util.Scanner;
 
 public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
+
+    public final Environment env = new Environment();
+
+    public final Scanner sc = new Scanner(System.in);
 
     public void interpret(List<Stmt> statements) throws Exception {
         try {
@@ -26,18 +33,16 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         }
     }
 
-    private void execute(Stmt statement) {
-        statement.accept(this);
+    @Override
+    public Object visitAssignExpr(Assign expr) throws Exception {
+        Object value = evaluate(expr.value);
+        env.assign(expr.name, value);
+        return value;
+
     }
 
     @Override
-    public Object visitAssignExpr(Assign expr) {
-
-        return null;
-    }
-
-    @Override
-    public Object visitBinaryExpr(Binary expr) {
+    public Object visitBinaryExpr(Binary expr) throws Exception {
         Object left = evaluate(expr.left);
         Object right = evaluate(expr.right);
 
@@ -67,7 +72,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     }
 
     @Override
-    public Object visitGroupingExpr(Grouping expr) {
+    public Object visitGroupingExpr(Grouping expr) throws Exception {
         return evaluate(expr.expression);
     }
 
@@ -83,7 +88,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     }
 
     @Override
-    public Object visitUnaryExpr(Unary expr) {
+    public Object visitUnaryExpr(Unary expr) throws Exception {
         Object right = evaluate(expr.right);
 
         switch (expr.operator.type) {
@@ -96,12 +101,77 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     }
 
     @Override
-    public Object visitVariableExpr(Variable expr) {
-        // TODO Auto-generated method stub
+    public Object visitVariableExpr(Variable expr) throws Exception {
+        return env.get(expr.name);
+
+    }
+
+    @Override
+    public Void visitExpressionStmt(Expression stmt) throws Exception {
+        evaluate(stmt.expression);
         return null;
     }
 
-    private Object evaluate(Expr expr) {
+    @Override
+    public Void visitPrintStmt(Print stmt) throws Exception {
+        Object value = evaluate(stmt.expression);
+        System.out.println(stringify(value));
+        return null;
+    }
+
+    @Override
+    public Void visitVarStmt(Var stmt) throws Exception {
+        Object value = null;
+        if (stmt.initializer != null) {
+            value = evaluate(stmt.initializer);
+        }
+
+        env.define(stmt.name.lexeme, value);
+        return null;
+    }
+
+    @Override
+    public Void visitForStmt(For stmt) throws Exception {
+        Integer value = (int) evaluate(stmt.left);
+        env.define("test", value);
+        while (isInRange(stmt)) {
+            for (Stmt s : stmt.body) {
+                execute(s);
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public Void visitReadStmt(Read stmt) throws Exception {
+        System.out.print("Write an input: ");
+        Object input = sc.nextLine();
+
+        if (input instanceof Integer) {
+            env.define(stmt.ident.lexeme, (int) input);
+        } else if (input instanceof String) {
+            env.define(stmt.ident.lexeme, (String) input);
+        } else {
+            throw new Exception("you can only input string or int literals");
+        }
+        return null;
+    }
+
+    @Override
+    public Void visitAssertStmt(Assert stmt) throws Exception {
+        if (isTruthy(evaluate(stmt.expr))) {
+            System.out.println("True");
+        } else {
+            System.out.println("False");
+        }
+        return null;
+    }
+
+    private void execute(Stmt statement) throws Exception {
+        statement.accept(this);
+    }
+
+    private Object evaluate(Expr expr) throws Exception {
         return expr.accept(this);
     }
 
@@ -125,6 +195,17 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         return a.equals(b);
     }
 
+    private boolean isInRange(Stmt.For stmt) throws Exception {
+        Object l = evaluate(stmt.left);
+        Object r = evaluate(stmt.right);
+
+        if (l instanceof Double && r instanceof Double) {
+            return (double) l <= (double) r;
+        } else {
+            return false;
+        }
+    }
+
     private String stringify(Object object) {
         if (object == null)
             return "null";
@@ -136,30 +217,5 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
             return text;
         }
         return object.toString();
-    }
-
-    @Override
-    public Void visitExpressionStmt(Expression stmt) {
-        evaluate(stmt.expression);
-        return null;
-    }
-
-    @Override
-    public Void visitPrintStmt(Print stmt) {
-        Object value = evaluate(stmt.expression);
-        System.out.println(stringify(value));
-        return null;
-    }
-
-    @Override
-    public Void visitVarStmt(Var stmt) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public Void visitWhileStmt(While stmt) {
-        // TODO Auto-generated method stub
-        return null;
     }
 }

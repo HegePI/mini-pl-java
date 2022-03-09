@@ -2,19 +2,19 @@ package miniPL;
 
 public abstract class Expr {
     interface Visitor<V> {
-        V visitAssignExpr(Assign expr);
+        V visitAssignExpr(Assign expr) throws Exception;
 
-        V visitBinaryExpr(Binary expr);
+        V visitBinaryExpr(Binary expr) throws Exception;
 
-        V visitGroupingExpr(Grouping expr);
+        V visitGroupingExpr(Grouping expr) throws Exception;
 
         V visitLiteralExpr(Literal expr);
 
         V visitLogicalExpr(Logical expr);
 
-        V visitUnaryExpr(Unary expr);
+        V visitUnaryExpr(Unary expr) throws Exception;
 
-        V visitVariableExpr(Variable expr);
+        V visitVariableExpr(Variable expr) throws Exception;
 
     }
 
@@ -25,7 +25,7 @@ public abstract class Expr {
         }
 
         @Override
-        <V> V accept(Visitor<V> visitor) {
+        <V> V accept(Visitor<V> visitor) throws Exception {
             return visitor.visitAssignExpr(this);
         }
 
@@ -41,7 +41,7 @@ public abstract class Expr {
         }
 
         @Override
-        <R> R accept(Visitor<R> visitor) {
+        <R> R accept(Visitor<R> visitor) throws Exception {
             return visitor.visitBinaryExpr(this);
         }
 
@@ -56,7 +56,7 @@ public abstract class Expr {
         }
 
         @Override
-        <R> R accept(Visitor<R> visitor) {
+        <R> R accept(Visitor<R> visitor) throws Exception {
             return visitor.visitGroupingExpr(this);
         }
 
@@ -100,7 +100,7 @@ public abstract class Expr {
         }
 
         @Override
-        <R> R accept(Visitor<R> visitor) {
+        <R> R accept(Visitor<R> visitor) throws Exception {
             return visitor.visitUnaryExpr(this);
         }
 
@@ -114,13 +114,13 @@ public abstract class Expr {
         }
 
         @Override
-        <R> R accept(Visitor<R> visitor) {
+        <R> R accept(Visitor<R> visitor) throws Exception {
             return visitor.visitVariableExpr(this);
         }
 
         final Token name;
     }
 
-    abstract <V> V accept(Visitor<V> visitor);
+    abstract <V> V accept(Visitor<V> visitor) throws Exception;
 
 }
