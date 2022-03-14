@@ -24,4 +24,9 @@ public class Environment {
         }
         throw new Exception("Undefined variable '" + name.lexeme + "'.");
     }
+
+    public boolean keyExists(Token name) throws Exception {
+        return this.variables.containsKey(name.lexeme);
+
+    }
 }

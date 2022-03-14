@@ -47,21 +47,21 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
         switch (expr.operator.type) {
             case MINUS:
-                return (double) left - (double) right;
+                return (int) left - (int) right;
             case PLUS:
-                if (left instanceof Double && right instanceof Double) {
-                    return (double) left + (double) right;
+                if (left instanceof Integer && right instanceof Integer) {
+                    return (int) left + (int) right;
                 }
                 if (left instanceof String && right instanceof String) {
                     return (String) left + (String) right;
                 }
                 break;
             case SLASH:
-                return (double) left / (double) right;
+                return (int) left / (int) right;
             case STAR:
-                return (double) left * (double) right;
+                return (int) left * (int) right;
             case GREATER:
-                return (double) left < (double) right;
+                return (int) left < (int) right;
             case NOTEQ:
                 return !isEqual(left, right);
             case EQ:
@@ -86,8 +86,8 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
         switch (expr.operator.type) {
             case MINUS:
-                return -(double) right;
-            case NOT:
+                return -(int) right;
+            case BANG:
                 return !isTruthy(right);
         }
         return null;
@@ -126,14 +126,14 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     @Override
     public Void visitForStmt(For stmt) throws Exception {
 
-        double value = (double) evaluate(stmt.left);
+        int value = (int) evaluate(stmt.left);
         env.define(stmt.varIdent.lexeme, value);
 
         while (isInRange(stmt)) {
             for (Stmt s : stmt.body) {
                 execute(s);
             }
-            double lastValue = (double) env.get(stmt.varIdent);
+            int lastValue = (int) env.get(stmt.varIdent);
             env.define(stmt.varIdent.lexeme, lastValue + 1);
         }
         return null;
@@ -142,6 +142,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     @Override
     public Void visitReadStmt(Read stmt) throws Exception {
         System.out.print("Write an input: ");
+
         Object input = sc.nextLine();
 
         if (input instanceof Integer) {
@@ -193,20 +194,14 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     }
 
     private boolean isInRange(Stmt.For stmt) throws Exception {
-        double value = (double) env.get(stmt.varIdent);
-        double r = (double) evaluate(stmt.right);
+        int value = (int) env.get(stmt.varIdent);
+        int r = (int) evaluate(stmt.right);
         return value < r;
     }
 
     private String stringify(Object object) {
-        if (object == null)
+        if (object == null) {
             return "null";
-        if (object instanceof Double) {
-            String text = object.toString();
-            if (text.endsWith(".0")) {
-                text = text.substring(0, text.length() - 2);
-            }
-            return text;
         }
         return object.toString();
     }

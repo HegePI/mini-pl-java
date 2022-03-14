@@ -16,7 +16,7 @@ public class Scanner {
         this.source = source;
     }
 
-    public void scanTokens() throws Exception {
+    public void scanTokens() {
         while (!isAtEnd()) {
             start = current;
             scanToken();
@@ -33,15 +33,9 @@ public class Scanner {
         return current >= source.length();
     }
 
-    private void scanToken() throws Exception {
+    private void scanToken() {
         char c = readChar();
         switch (c) {
-            case '{':
-                addToken(TokenType.LBRACE);
-                break;
-            case '}':
-                addToken(TokenType.RBRACE);
-                break;
             case '(':
                 addToken(TokenType.LPAREN);
                 break;
@@ -83,9 +77,6 @@ public class Scanner {
             case '<':
                 addToken(TokenType.GREATER);
                 break;
-            case '&':
-                addToken(TokenType.AND);
-                break;
             case ';':
                 addToken(TokenType.SEMICOLON);
                 break;
@@ -94,7 +85,7 @@ public class Scanner {
                     addToken(TokenType.NOTEQ);
                     break;
                 } else {
-                    addToken(TokenType.NOT);
+                    addToken(TokenType.BANG);
                     break;
                 }
             case '"':
@@ -113,7 +104,7 @@ public class Scanner {
                 } else if (isAlpha(c)) {
                     readIdentifier();
                 } else {
-                    throw new Exception("unexpected character");
+                    printScanningError(this.line, "unexpected character");
                 }
         }
     }
@@ -147,16 +138,15 @@ public class Scanner {
         return source.charAt(current);
     }
 
-    private void readStringLiteral() throws Exception {
+    private void readStringLiteral() {
         while (peek() != '"' && !isAtEnd()) {
             if (peek() == '\n')
                 line++;
             readChar();
         }
 
-        // could implement error handling, now only throws
         if (isAtEnd()) {
-            throw new Exception("");
+            printScanningError(this.line, "ended while reading");
         }
         readChar();
 
@@ -191,7 +181,7 @@ public class Scanner {
         }
 
         addToken(TokenType.NUMBER,
-                Double.parseDouble(source.substring(start, current)));
+                Integer.parseInt(source.substring(start, current)));
     }
 
     private char peekNext() {
@@ -211,6 +201,11 @@ public class Scanner {
             type = TokenType.IDENTIFIER;
         addToken(type);
 
+    }
+
+    private void printScanningError(int line2, String msg) {
+        System.err.println("Error on line: " + line2 + "\n" + msg);
+        System.exit(64);
     }
 
     private static final Map<String, TokenType> keywords;

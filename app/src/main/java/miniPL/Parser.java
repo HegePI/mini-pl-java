@@ -14,41 +14,9 @@ public class Parser {
     public List<Stmt> parse() throws Exception {
         List<Stmt> l = new ArrayList<>();
         while (!isAtEnd()) {
-            l.add(declaration());
+            l.add(statement());
         }
         return l;
-    }
-
-    private Stmt declaration() throws Exception {
-        try {
-            if (match(TokenType.VAR)) {
-                return varDeclaration();
-            }
-            return statement();
-        } catch (Exception e) {
-            throw new Exception(e.getMessage());
-        }
-    }
-
-    private Stmt varDeclaration() throws Exception {
-        Token name = consume(TokenType.IDENTIFIER, "Expect variable name.");
-
-        consume(TokenType.DDOT, "Expect ':' after variable identifier to define type");
-
-        Token type = null;
-        if (match(TokenType.INT)) {
-            type = consume(TokenType.INT, "");
-        } else if (match(TokenType.STRING)) {
-            type = consume(TokenType.STRING, "");
-        }
-
-        Expr initializer = null;
-        if (match(TokenType.EQ)) {
-            initializer = expression();
-        }
-
-        consume(TokenType.SEMICOLON, "Expect ';' after variable declaration.");
-        return new Stmt.Var(name, type, initializer);
     }
 
     private Stmt statement() throws Exception {
@@ -64,8 +32,32 @@ public class Parser {
         if (match(TokenType.ASSERT)) {
             return assertStatement();
         }
+        if (match(TokenType.VAR)) {
+            return varStatement();
+        }
 
         return expressionStatement();
+    }
+
+    private Stmt varStatement() throws Exception {
+        Token name = consume(TokenType.IDENTIFIER, "Expect variable name.");
+
+        consume(TokenType.DDOT, "Expect ':' after variable identifier to define type");
+
+        Token type = null;
+        if (peek().type == TokenType.INT) {
+            type = consume(TokenType.INT, "");
+        } else if (peek().type == TokenType.STRING) {
+            type = consume(TokenType.STRING, "");
+        }
+
+        Expr initializer = null;
+        if (match(TokenType.ASSIGN)) {
+            initializer = expression();
+        }
+
+        consume(TokenType.SEMICOLON, "Expect ';' after variable declaration.");
+        return new Stmt.Var(name, type, initializer);
     }
 
     private Stmt assertStatement() throws Exception {
@@ -81,12 +73,6 @@ public class Parser {
 
         consume(TokenType.SEMICOLON, "Expect ';' after read statement");
         return new Stmt.Read(ident);
-    }
-
-    private Stmt expressionStatement() throws Exception {
-        Expr expr = expression();
-        consume(TokenType.SEMICOLON, "Expect ';' after expression.");
-        return new Stmt.Expression(expr);
     }
 
     private Stmt printStatement() throws Exception {
@@ -112,9 +98,16 @@ public class Parser {
 
         consume(TokenType.END, "Expect \"end for\" to end for loop");
         consume(TokenType.FOR, "Expect \"end for\" to end for loop");
+        consume(TokenType.SEMICOLON, "Expect ';' after statement");
 
         return new Stmt.For(varIdent, left, right, body);
 
+    }
+
+    private Stmt expressionStatement() throws Exception {
+        Expr expr = expression();
+        consume(TokenType.SEMICOLON, "Expect ';' after expression.");
+        return new Stmt.Expression(expr);
     }
 
     private Expr equality() throws Exception {
@@ -166,7 +159,7 @@ public class Parser {
     }
 
     private Expr unary() throws Exception {
-        if (match(TokenType.NOT, TokenType.MINUS)) {
+        if (match(TokenType.BANG, TokenType.MINUS)) {
             Token operator = previous();
             Expr right = unary();
             return new Expr.Unary(operator, right);
@@ -206,7 +199,6 @@ public class Parser {
         Expr expr = equality();
 
         if (match(TokenType.EQ)) {
-            // Token equals = previous();
             Expr value = assignment();
             if (expr instanceof Expr.Variable) {
                 Token name = ((Expr.Variable) expr).name;
@@ -261,4 +253,12 @@ public class Parser {
         return tokens.get(current);
     }
 
+    private boolean checkTypes(Token... tokens) throws Exception {
+        return false;
+    }
+
+    private void printParsingError(String msg) {
+        System.err.println("Error: " + msg);
+        System.exit(64);
+    }
 }
