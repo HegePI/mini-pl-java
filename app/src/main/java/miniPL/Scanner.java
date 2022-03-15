@@ -50,7 +50,7 @@ public class Scanner {
                 break;
             case '/':
                 if (match('/')) {
-                    while (peek() != '\n' && isAtEnd())
+                    while (peek() != '\n' && !isAtEnd())
                         readChar();
                     break;
                 } else {
@@ -123,11 +123,12 @@ public class Scanner {
     }
 
     private boolean match(char c) {
-        if (isAtEnd())
+        if (isAtEnd()) {
             return false;
-        if (source.charAt(current) != c)
+        }
+        if (source.charAt(current) != c) {
             return false;
-
+        }
         current++;
         return true;
     }

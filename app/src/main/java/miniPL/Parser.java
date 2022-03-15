@@ -49,6 +49,8 @@ public class Parser {
             type = consume(TokenType.INT, "");
         } else if (peek().type == TokenType.STRING) {
             type = consume(TokenType.STRING, "");
+        } else if (peek().type == TokenType.BOOL) {
+            type = consume(TokenType.BOOL, "");
         }
 
         Expressions initializer = null;
