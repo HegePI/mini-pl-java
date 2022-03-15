@@ -1,6 +1,6 @@
 package miniPL;
 
-public abstract class Expr {
+public abstract class Expressions {
     interface Visitor<V> {
         V visitAssignExpr(Assign expr) throws Exception;
 
@@ -16,8 +16,8 @@ public abstract class Expr {
 
     }
 
-    static class Assign extends Expr {
-        Assign(Token name, Expr value) {
+    static class Assign extends Expressions {
+        Assign(Token name, Expressions value) {
             this.name = name;
             this.value = value;
         }
@@ -28,11 +28,11 @@ public abstract class Expr {
         }
 
         final Token name;
-        final Expr value;
+        final Expressions value;
     }
 
-    static class Binary extends Expr {
-        Binary(Expr left, Token operator, Expr right) {
+    static class Binary extends Expressions {
+        Binary(Expressions left, Token operator, Expressions right) {
             this.left = left;
             this.operator = operator;
             this.right = right;
@@ -43,13 +43,13 @@ public abstract class Expr {
             return visitor.visitBinaryExpr(this);
         }
 
-        final Expr left;
+        final Expressions left;
         final Token operator;
-        final Expr right;
+        final Expressions right;
     }
 
-    static class Grouping extends Expr {
-        Grouping(Expr expression) {
+    static class Grouping extends Expressions {
+        Grouping(Expressions expression) {
             this.expression = expression;
         }
 
@@ -58,10 +58,10 @@ public abstract class Expr {
             return visitor.visitGroupingExpr(this);
         }
 
-        final Expr expression;
+        final Expressions expression;
     }
 
-    static class Literal extends Expr {
+    static class Literal extends Expressions {
         Literal(Object value) {
             this.value = value;
         }
@@ -74,8 +74,8 @@ public abstract class Expr {
         final Object value;
     }
 
-    static class Unary extends Expr {
-        Unary(Token operator, Expr right) {
+    static class Unary extends Expressions {
+        Unary(Token operator, Expressions right) {
             this.operator = operator;
             this.right = right;
         }
@@ -86,10 +86,10 @@ public abstract class Expr {
         }
 
         final Token operator;
-        final Expr right;
+        final Expressions right;
     }
 
-    static class Variable extends Expr {
+    static class Variable extends Expressions {
         Variable(Token name) {
             this.name = name;
         }

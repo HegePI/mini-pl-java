@@ -11,15 +11,15 @@ public class Parser {
         this.tokens = tokens;
     }
 
-    public List<Stmt> parse() throws Exception {
-        List<Stmt> l = new ArrayList<>();
+    public List<Statements> parse() throws Exception {
+        List<Statements> l = new ArrayList<>();
         while (!isAtEnd()) {
             l.add(statement());
         }
         return l;
     }
 
-    private Stmt statement() throws Exception {
+    private Statements statement() throws Exception {
         if (match(TokenType.PRINT)) {
             return printStatement();
         }
@@ -39,7 +39,7 @@ public class Parser {
         return expressionStatement();
     }
 
-    private Stmt varStatement() throws Exception {
+    private Statements varStatement() throws Exception {
         Token name = consume(TokenType.IDENTIFIER, "Expect variable name.");
 
         consume(TokenType.DDOT, "Expect ':' after variable identifier to define type");
@@ -51,47 +51,47 @@ public class Parser {
             type = consume(TokenType.STRING, "");
         }
 
-        Expr initializer = null;
+        Expressions initializer = null;
         if (match(TokenType.ASSIGN)) {
             initializer = expression();
         }
 
         consume(TokenType.SEMICOLON, "Expect ';' after variable declaration.");
-        return new Stmt.Var(name, type, initializer);
+        return new Statements.Var(name, type, initializer);
     }
 
-    private Stmt assertStatement() throws Exception {
+    private Statements assertStatement() throws Exception {
         consume(TokenType.LPAREN, "Expect '(' in assert statement");
-        Expr expr = expression();
+        Expressions expr = expression();
         consume(TokenType.RPAREN, "Unclosed '(', expect ')'");
         consume(TokenType.SEMICOLON, "Expect ';' after assert statement");
-        return new Stmt.Assert(expr);
+        return new Statements.Assert(expr);
     }
 
-    private Stmt readStatement() throws Exception {
+    private Statements readStatement() throws Exception {
         Token ident = consume(TokenType.IDENTIFIER, "Expect identifier to store into red input value");
 
         consume(TokenType.SEMICOLON, "Expect ';' after read statement");
-        return new Stmt.Read(ident);
+        return new Statements.Read(ident);
     }
 
-    private Stmt printStatement() throws Exception {
-        Expr value = expression();
+    private Statements printStatement() throws Exception {
+        Expressions value = expression();
         consume(TokenType.SEMICOLON, "Expect ';' after value.");
-        return new Stmt.Print(value);
+        return new Statements.Print(value);
     }
 
-    private Stmt forStatement() throws Exception {
+    private Statements forStatement() throws Exception {
 
         Token varIdent = consume(TokenType.IDENTIFIER, "Expect identifier after \"for\" statement");
         consume(TokenType.IN, "Expect \"in\" after variable");
-        Expr left = expression();
+        Expressions left = expression();
         consume(TokenType.DOT, "Expect \"..\" to define range");
         consume(TokenType.DOT, "Expect \"..\" to define range");
-        Expr right = expression();
+        Expressions right = expression();
         consume(TokenType.DO, "Expect keyword \"for\"");
 
-        List<Stmt> body = new ArrayList<Stmt>();
+        List<Statements> body = new ArrayList<Statements>();
         while (peek().type != TokenType.END) {
             body.add(statement());
         }
@@ -100,109 +100,109 @@ public class Parser {
         consume(TokenType.FOR, "Expect \"end for\" to end for loop");
         consume(TokenType.SEMICOLON, "Expect ';' after statement");
 
-        return new Stmt.For(varIdent, left, right, body);
+        return new Statements.For(varIdent, left, right, body);
 
     }
 
-    private Stmt expressionStatement() throws Exception {
-        Expr expr = expression();
+    private Statements expressionStatement() throws Exception {
+        Expressions expr = expression();
         consume(TokenType.SEMICOLON, "Expect ';' after expression.");
-        return new Stmt.Expression(expr);
+        return new Statements.Expression(expr);
     }
 
-    private Expr equality() throws Exception {
-        Expr expr = comparison();
+    private Expressions equality() throws Exception {
+        Expressions expr = comparison();
 
         while (match(TokenType.NOTEQ, TokenType.EQ)) {
             Token op = previous();
-            Expr r = comparison();
-            expr = new Expr.Binary(expr, op, r);
+            Expressions r = comparison();
+            expr = new Expressions.Binary(expr, op, r);
         }
         return expr;
     }
 
-    private Expr comparison() throws Exception {
-        Expr expr = term();
+    private Expressions comparison() throws Exception {
+        Expressions expr = term();
 
         while (match(TokenType.GREATER)) {
             Token operator = previous();
-            Expr right = term();
-            expr = new Expr.Binary(expr, operator, right);
+            Expressions right = term();
+            expr = new Expressions.Binary(expr, operator, right);
         }
 
         return expr;
 
     }
 
-    private Expr term() throws Exception {
-        Expr expr = factor();
+    private Expressions term() throws Exception {
+        Expressions expr = factor();
 
         while (match(TokenType.MINUS, TokenType.PLUS)) {
             Token operator = previous();
-            Expr right = factor();
-            expr = new Expr.Binary(expr, operator, right);
+            Expressions right = factor();
+            expr = new Expressions.Binary(expr, operator, right);
         }
 
         return expr;
     }
 
-    private Expr factor() throws Exception {
-        Expr expr = unary();
+    private Expressions factor() throws Exception {
+        Expressions expr = unary();
 
         while (match(TokenType.SLASH, TokenType.STAR)) {
             Token operator = previous();
-            Expr right = unary();
-            expr = new Expr.Binary(expr, operator, right);
+            Expressions right = unary();
+            expr = new Expressions.Binary(expr, operator, right);
         }
 
         return expr;
     }
 
-    private Expr unary() throws Exception {
+    private Expressions unary() throws Exception {
         if (match(TokenType.BANG, TokenType.MINUS)) {
             Token operator = previous();
-            Expr right = unary();
-            return new Expr.Unary(operator, right);
+            Expressions right = unary();
+            return new Expressions.Unary(operator, right);
         }
 
         return primary();
     }
 
-    private Expr primary() throws Exception {
+    private Expressions primary() throws Exception {
         if (match(TokenType.FALSE))
-            return new Expr.Literal(false);
+            return new Expressions.Literal(false);
         if (match(TokenType.TRUE))
-            return new Expr.Literal(true);
+            return new Expressions.Literal(true);
         if (match(TokenType.NUMBER, TokenType.STRING)) {
-            return new Expr.Literal(previous().literal);
+            return new Expressions.Literal(previous().literal);
         }
 
         if (match(TokenType.LPAREN)) {
-            Expr expr = expression();
+            Expressions expr = expression();
             consume(TokenType.RPAREN, "Expect ')' after expression.");
-            return new Expr.Grouping(expr);
+            return new Expressions.Grouping(expr);
         }
         if (match(TokenType.IDENTIFIER)) {
-            return new Expr.Variable(previous());
+            return new Expressions.Variable(previous());
         }
         if (match(TokenType.STRINGLITERAL)) {
-            return new Expr.Literal(previous().literal);
+            return new Expressions.Literal(previous().literal);
         }
         throw new Exception("WTF");
     }
 
-    private Expr expression() throws Exception {
+    private Expressions expression() throws Exception {
         return assignment();
     }
 
-    private Expr assignment() throws Exception {
-        Expr expr = equality();
+    private Expressions assignment() throws Exception {
+        Expressions expr = equality();
 
         if (match(TokenType.EQ)) {
-            Expr value = assignment();
-            if (expr instanceof Expr.Variable) {
-                Token name = ((Expr.Variable) expr).name;
-                return new Expr.Assign(name, value);
+            Expressions value = assignment();
+            if (expr instanceof Expressions.Variable) {
+                Token name = ((Expressions.Variable) expr).name;
+                return new Expressions.Assign(name, value);
             }
             throw new Exception("Invalid asignment type");
         }

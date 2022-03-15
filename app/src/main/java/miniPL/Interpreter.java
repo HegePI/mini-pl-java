@@ -2,29 +2,29 @@ package miniPL;
 
 import java.util.List;
 
-import miniPL.Expr.Assign;
-import miniPL.Expr.Binary;
-import miniPL.Expr.Grouping;
-import miniPL.Expr.Literal;
-import miniPL.Expr.Unary;
-import miniPL.Expr.Variable;
-import miniPL.Stmt.Assert;
-import miniPL.Stmt.Expression;
-import miniPL.Stmt.For;
-import miniPL.Stmt.Print;
-import miniPL.Stmt.Read;
-import miniPL.Stmt.Var;
+import miniPL.Expressions.Assign;
+import miniPL.Expressions.Binary;
+import miniPL.Expressions.Grouping;
+import miniPL.Expressions.Literal;
+import miniPL.Expressions.Unary;
+import miniPL.Expressions.Variable;
+import miniPL.Statements.Assert;
+import miniPL.Statements.Expression;
+import miniPL.Statements.For;
+import miniPL.Statements.Print;
+import miniPL.Statements.Read;
+import miniPL.Statements.Var;
 import java.util.Scanner;
 
-public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
+public class Interpreter implements Expressions.Visitor<Object>, Statements.Visitor<Void> {
 
     public final Environment env = new Environment();
 
     public final Scanner sc = new Scanner(System.in);
 
-    public void interpret(List<Stmt> statements) throws Exception {
+    public void interpret(List<Statements> statements) throws Exception {
         try {
-            for (Stmt statement : statements) {
+            for (Statements statement : statements) {
                 execute(statement);
             }
         } catch (Exception error) {
@@ -130,7 +130,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         env.define(stmt.varIdent.lexeme, value);
 
         while (isInRange(stmt)) {
-            for (Stmt s : stmt.body) {
+            for (Statements s : stmt.body) {
                 execute(s);
             }
             int lastValue = (int) env.get(stmt.varIdent);
@@ -165,11 +165,11 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         return null;
     }
 
-    private void execute(Stmt statement) throws Exception {
+    private void execute(Statements statement) throws Exception {
         statement.accept(this);
     }
 
-    private Object evaluate(Expr expr) throws Exception {
+    private Object evaluate(Expressions expr) throws Exception {
         return expr.accept(this);
     }
 
@@ -193,7 +193,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         return a.equals(b);
     }
 
-    private boolean isInRange(Stmt.For stmt) throws Exception {
+    private boolean isInRange(Statements.For stmt) throws Exception {
         int value = (int) env.get(stmt.varIdent);
         int r = (int) evaluate(stmt.right);
         return value < r;

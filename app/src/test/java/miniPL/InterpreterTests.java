@@ -21,7 +21,7 @@ public class InterpreterTests {
 
         Parser p = new Parser(sc.getTokens());
 
-        List<Stmt> l = p.parse();
+        List<Statements> l = p.parse();
 
         Interpreter i = new Interpreter();
 
@@ -38,7 +38,7 @@ public class InterpreterTests {
 
         Parser p = new Parser(sc.getTokens());
 
-        List<Stmt> l = p.parse();
+        List<Statements> l = p.parse();
 
         Interpreter i = new Interpreter();
 

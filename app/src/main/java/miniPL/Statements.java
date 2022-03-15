@@ -2,7 +2,7 @@ package miniPL;
 
 import java.util.List;
 
-public abstract class Stmt {
+public abstract class Statements {
     interface Visitor<R> {
         R visitExpressionStmt(Expression stmt) throws Exception;
 
@@ -17,12 +17,12 @@ public abstract class Stmt {
         R visitAssertStmt(Assert stmt) throws Exception;
     }
 
-    static class Expression extends Stmt {
-        Expression(Expr expression) {
+    static class Expression extends Statements {
+        Expression(Expressions expression) {
             this.expression = expression;
         }
 
-        final Expr expression;
+        final Expressions expression;
 
         @Override
         <R> R accept(Visitor<R> visitor) throws Exception {
@@ -30,12 +30,12 @@ public abstract class Stmt {
         }
     }
 
-    static class Print extends Stmt {
-        Print(Expr expression) {
+    static class Print extends Statements {
+        Print(Expressions expression) {
             this.expression = expression;
         }
 
-        final Expr expression;
+        final Expressions expression;
 
         @Override
         <R> R accept(Visitor<R> visitor) throws Exception {
@@ -43,8 +43,8 @@ public abstract class Stmt {
         }
     }
 
-    static class Var extends Stmt {
-        Var(Token name, Token type, Expr initializer) {
+    static class Var extends Statements {
+        Var(Token name, Token type, Expressions initializer) {
             this.name = name;
             this.type = type;
             this.initializer = initializer;
@@ -52,7 +52,7 @@ public abstract class Stmt {
 
         final Token name;
         final Token type;
-        final Expr initializer;
+        final Expressions initializer;
 
         @Override
         <R> R accept(Visitor<R> visitor) throws Exception {
@@ -60,8 +60,8 @@ public abstract class Stmt {
         }
     }
 
-    static class For extends Stmt {
-        For(Token varIdent, Expr left, Expr right, List<Stmt> body) {
+    static class For extends Statements {
+        For(Token varIdent, Expressions left, Expressions right, List<Statements> body) {
             this.varIdent = varIdent;
             this.left = left;
             this.right = right;
@@ -69,9 +69,9 @@ public abstract class Stmt {
         }
 
         final Token varIdent;
-        final Expr left;
-        final Expr right;
-        final List<Stmt> body;
+        final Expressions left;
+        final Expressions right;
+        final List<Statements> body;
 
         @Override
         <R> R accept(Visitor<R> visitor) throws Exception {
@@ -79,7 +79,7 @@ public abstract class Stmt {
         }
     }
 
-    static class Read extends Stmt {
+    static class Read extends Statements {
         Read(Token ident) {
             this.ident = ident;
         }
@@ -92,12 +92,12 @@ public abstract class Stmt {
         }
     }
 
-    static class Assert extends Stmt {
-        Assert(Expr expr) {
+    static class Assert extends Statements {
+        Assert(Expressions expr) {
             this.expr = expr;
         }
 
-        final Expr expr;
+        final Expressions expr;
 
         @Override
         <R> R accept(Visitor<R> visitor) throws Exception {
