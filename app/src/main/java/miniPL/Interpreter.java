@@ -2,13 +2,13 @@ package miniPL;
 
 import java.util.List;
 
-import miniPL.Expression.Assign;
-import miniPL.Expression.Binary;
-import miniPL.Expression.Grouping;
-import miniPL.Expression.Literal;
-import miniPL.Expression.Unary;
-import miniPL.Expression.Variable;
+import miniPL.Expression.BinaryExpression;
+import miniPL.Expression.GroupingExpression;
+import miniPL.Expression.LiteralExpression;
+import miniPL.Expression.UnaryExpression;
+import miniPL.Expression.VariableExpression;
 import miniPL.Statement.AssertStatement;
+import miniPL.Statement.AssignStatement;
 import miniPL.Statement.ExpressionStatement;
 import miniPL.Statement.ForStatement;
 import miniPL.Statement.PrintStatement;
@@ -33,15 +33,7 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
     }
 
     @Override
-    public Object visitAssignExpr(Assign expr) throws Exception {
-        Object value = evaluate(expr.value);
-        env.assign(expr.name, value);
-        return value;
-
-    }
-
-    @Override
-    public Object visitBinaryExpr(Binary expr) throws Exception {
+    public Object visitBinaryExpression(BinaryExpression expr) throws Exception {
         Object left = evaluate(expr.left);
         Object right = evaluate(expr.right);
 
@@ -71,17 +63,17 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
     }
 
     @Override
-    public Object visitGroupingExpr(Grouping expr) throws Exception {
+    public Object visitGroupingExpression(GroupingExpression expr) throws Exception {
         return evaluate(expr.expression);
     }
 
     @Override
-    public Object visitLiteralExpr(Literal expr) {
+    public Object visitLiteralExpression(LiteralExpression expr) {
         return expr.value;
     }
 
     @Override
-    public Object visitUnaryExpr(Unary expr) throws Exception {
+    public Object visitUnaryExpression(UnaryExpression expr) throws Exception {
         Object right = evaluate(expr.right);
 
         switch (expr.operator.type) {
@@ -94,7 +86,7 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
     }
 
     @Override
-    public Object visitVariableExpr(Variable expr) throws Exception {
+    public Object visitVariableExpression(VariableExpression expr) throws Exception {
         return env.get(expr.name);
 
     }
@@ -108,7 +100,7 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
     @Override
     public Void visitPrintStmt(PrintStatement stmt) throws Exception {
         Object value = evaluate(stmt.expression);
-        System.out.println(stringify(value));
+        System.out.print(stringify(value));
         return null;
     }
 
@@ -141,16 +133,14 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
 
     @Override
     public Void visitReadStmt(ReadStatement stmt) throws Exception {
-        System.out.print("Write an input: ");
 
-        Object input = sc.nextLine();
+        String input = sc.nextLine();
 
-        if (input instanceof Integer) {
-            env.define(stmt.ident.lexeme, (int) input);
-        } else if (input instanceof String) {
-            env.define(stmt.ident.lexeme, (String) input);
-        } else {
-            throw new Exception("you can only input string or int literals");
+        try {
+            int intInput = Integer.parseInt(input);
+            env.define(stmt.ident.lexeme, intInput);
+        } catch (Exception e) {
+            env.define(stmt.ident.lexeme, input);
         }
         return null;
     }
@@ -162,6 +152,12 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
         } else {
             System.out.println("False");
         }
+        return null;
+    }
+
+    @Override
+    public Void visitAssignStatement(AssignStatement stmt) throws Exception {
+        env.define(stmt.name.lexeme, evaluate(stmt.value));
         return null;
     }
 

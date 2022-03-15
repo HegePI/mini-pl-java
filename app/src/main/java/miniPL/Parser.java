@@ -20,8 +20,11 @@ public class Parser {
     }
 
     private Statement statement() throws Exception {
-        if (match(TokenType.PRINT)) {
-            return printStatement();
+        if (match(TokenType.VAR)) {
+            return varStatement();
+        }
+        if (peek().type == TokenType.IDENTIFIER) {
+            return assignStatement();
         }
         if (match(TokenType.FOR)) {
             return forStatement();
@@ -29,19 +32,26 @@ public class Parser {
         if (match(TokenType.READ)) {
             return readStatement();
         }
+        if (match(TokenType.PRINT)) {
+            return printStatement();
+        }
         if (match(TokenType.ASSERT)) {
             return assertStatement();
         }
-        if (match(TokenType.VAR)) {
-            return varStatement();
-        }
-
         return expressionStatement();
     }
 
-    private Statement varStatement() throws Exception {
-        Token name = consume(TokenType.IDENTIFIER, "Expect variable name.");
+    private Statement assignStatement() throws Exception {
+        Token name = consume(TokenType.IDENTIFIER, "Expect identifier");
+        consume(TokenType.ASSIGN, "Expect ':=' after identifier");
+        Expression value = expression();
+        consume(TokenType.SEMICOLON, "Expect ';' after statement");
 
+        return new Statement.AssignStatement(name, value);
+    }
+
+    private Statement varStatement() throws Exception {
+        Token name = consume(TokenType.IDENTIFIER, "Expect variable name");
         consume(TokenType.DDOT, "Expect ':' after variable identifier to define type");
 
         Token type = null;
@@ -59,6 +69,7 @@ public class Parser {
         }
 
         consume(TokenType.SEMICOLON, "Expect ';' after variable declaration.");
+
         return new Statement.VarStatement(name, type, initializer);
     }
 
@@ -67,24 +78,25 @@ public class Parser {
         Expression expr = expression();
         consume(TokenType.RPAREN, "Unclosed '(', expect ')'");
         consume(TokenType.SEMICOLON, "Expect ';' after assert statement");
+
         return new Statement.AssertStatement(expr);
     }
 
     private Statement readStatement() throws Exception {
         Token ident = consume(TokenType.IDENTIFIER, "Expect identifier to store into red input value");
-
         consume(TokenType.SEMICOLON, "Expect ';' after read statement");
+
         return new Statement.ReadStatement(ident);
     }
 
     private Statement printStatement() throws Exception {
         Expression value = expression();
         consume(TokenType.SEMICOLON, "Expect ';' after value.");
+
         return new Statement.PrintStatement(value);
     }
 
     private Statement forStatement() throws Exception {
-
         Token varIdent = consume(TokenType.IDENTIFIER, "Expect identifier after \"for\" statement");
         consume(TokenType.IN, "Expect \"in\" after variable");
         Expression left = expression();
@@ -109,62 +121,63 @@ public class Parser {
     private Statement expressionStatement() throws Exception {
         Expression expr = expression();
         consume(TokenType.SEMICOLON, "Expect ';' after expression.");
+
         return new Statement.ExpressionStatement(expr);
     }
 
-    private Expression equality() throws Exception {
-        Expression expr = comparison();
+    private Expression expression() throws Exception {
+        return equality();
+    }
 
+    private Expression equality() throws Exception {
+        Expression left = comparison();
         while (match(TokenType.NOTEQ, TokenType.EQ)) {
             Token op = previous();
-            Expression r = comparison();
-            expr = new Expression.Binary(expr, op, r);
+            Expression right = comparison();
+            left = new Expression.BinaryExpression(left, op, right);
         }
-        return expr;
+
+        return left;
     }
 
     private Expression comparison() throws Exception {
-        Expression expr = term();
-
+        Expression left = term();
         while (match(TokenType.GREATER)) {
-            Token operator = previous();
+            Token op = previous();
             Expression right = term();
-            expr = new Expression.Binary(expr, operator, right);
+            left = new Expression.BinaryExpression(left, op, right);
         }
 
-        return expr;
-
+        return left;
     }
 
     private Expression term() throws Exception {
-        Expression expr = factor();
-
+        Expression left = factor();
         while (match(TokenType.MINUS, TokenType.PLUS)) {
-            Token operator = previous();
+            Token op = previous();
             Expression right = factor();
-            expr = new Expression.Binary(expr, operator, right);
+            left = new Expression.BinaryExpression(left, op, right);
         }
 
-        return expr;
+        return left;
     }
 
     private Expression factor() throws Exception {
-        Expression expr = unary();
-
+        Expression left = unary();
         while (match(TokenType.SLASH, TokenType.STAR)) {
-            Token operator = previous();
+            Token op = previous();
             Expression right = unary();
-            expr = new Expression.Binary(expr, operator, right);
+            left = new Expression.BinaryExpression(left, op, right);
         }
 
-        return expr;
+        return left;
     }
 
     private Expression unary() throws Exception {
         if (match(TokenType.BANG, TokenType.MINUS)) {
             Token operator = previous();
             Expression right = unary();
-            return new Expression.Unary(operator, right);
+            return new Expression.UnaryExpression(operator, right);
         }
 
         return primary();
@@ -172,43 +185,24 @@ public class Parser {
 
     private Expression primary() throws Exception {
         if (match(TokenType.FALSE))
-            return new Expression.Literal(false);
+            return new Expression.LiteralExpression(false);
         if (match(TokenType.TRUE))
-            return new Expression.Literal(true);
+            return new Expression.LiteralExpression(true);
         if (match(TokenType.NUMBER, TokenType.STRING)) {
-            return new Expression.Literal(previous().literal);
+            return new Expression.LiteralExpression(previous().literal);
         }
-
+        if (match(TokenType.STRINGLITERAL)) {
+            return new Expression.LiteralExpression(previous().literal);
+        }
         if (match(TokenType.LPAREN)) {
             Expression expr = expression();
             consume(TokenType.RPAREN, "Expect ')' after expression.");
-            return new Expression.Grouping(expr);
+            return new Expression.GroupingExpression(expr);
         }
         if (match(TokenType.IDENTIFIER)) {
-            return new Expression.Variable(previous());
-        }
-        if (match(TokenType.STRINGLITERAL)) {
-            return new Expression.Literal(previous().literal);
+            return new Expression.VariableExpression(previous());
         }
         throw new Exception("WTF");
-    }
-
-    private Expression expression() throws Exception {
-        return assignment();
-    }
-
-    private Expression assignment() throws Exception {
-        Expression expr = equality();
-
-        if (match(TokenType.EQ)) {
-            Expression value = assignment();
-            if (expr instanceof Expression.Variable) {
-                Token name = ((Expression.Variable) expr).name;
-                return new Expression.Assign(name, value);
-            }
-            throw new Exception("Invalid asignment type");
-        }
-        return expr;
     }
 
     private Token consume(TokenType type, String message) throws Exception {
@@ -226,6 +220,7 @@ public class Parser {
                 return true;
             }
         }
+
         return false;
     }
 
@@ -237,6 +232,7 @@ public class Parser {
         if (!isAtEnd()) {
             current++;
         }
+
         return previous();
     }
 
@@ -244,6 +240,7 @@ public class Parser {
         if (isAtEnd()) {
             return false;
         }
+
         return peek().type == type;
     }
 

@@ -15,6 +15,23 @@ public abstract class Statement {
         R visitReadStmt(ReadStatement stmt) throws Exception;
 
         R visitAssertStmt(AssertStatement stmt) throws Exception;
+
+        R visitAssignStatement(AssignStatement stmt) throws Exception;
+    }
+
+    static class AssignStatement extends Statement {
+        AssignStatement(Token name, Expression value) {
+            this.name = name;
+            this.value = value;
+        }
+
+        final Token name;
+        final Expression value;
+
+        @Override
+        <R> R accept(Visitor<R> visitor) throws Exception {
+            return visitor.visitAssignStatement(this);
+        }
     }
 
     static class ExpressionStatement extends Statement {
