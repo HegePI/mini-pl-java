@@ -27,7 +27,7 @@ public class App {
         List<Token> tl = sc.getTokens();
 
         Parser p = new Parser(tl);
-        List<Statements> sl = p.parse();
+        List<Statement> sl = p.parse();
 
         Interpreter i = new Interpreter();
         i.interpret(sl);

@@ -2,27 +2,27 @@ package miniPL;
 
 import java.util.List;
 
-public abstract class Statements {
+public abstract class Statement {
     interface Visitor<R> {
-        R visitExpressionStmt(Expression stmt) throws Exception;
+        R visitExpressionStmt(ExpressionStatement stmt) throws Exception;
 
-        R visitPrintStmt(Print stmt) throws Exception;
+        R visitPrintStmt(PrintStatement stmt) throws Exception;
 
-        R visitVarStmt(Var stmt) throws Exception;
+        R visitVarStmt(VarStatement stmt) throws Exception;
 
-        R visitForStmt(For stmt) throws Exception;
+        R visitForStmt(ForStatement stmt) throws Exception;
 
-        R visitReadStmt(Read stmt) throws Exception;
+        R visitReadStmt(ReadStatement stmt) throws Exception;
 
-        R visitAssertStmt(Assert stmt) throws Exception;
+        R visitAssertStmt(AssertStatement stmt) throws Exception;
     }
 
-    static class Expression extends Statements {
-        Expression(Expressions expression) {
+    static class ExpressionStatement extends Statement {
+        ExpressionStatement(Expression expression) {
             this.expression = expression;
         }
 
-        final Expressions expression;
+        final Expression expression;
 
         @Override
         <R> R accept(Visitor<R> visitor) throws Exception {
@@ -30,12 +30,12 @@ public abstract class Statements {
         }
     }
 
-    static class Print extends Statements {
-        Print(Expressions expression) {
+    static class PrintStatement extends Statement {
+        PrintStatement(Expression expression) {
             this.expression = expression;
         }
 
-        final Expressions expression;
+        final Expression expression;
 
         @Override
         <R> R accept(Visitor<R> visitor) throws Exception {
@@ -43,8 +43,8 @@ public abstract class Statements {
         }
     }
 
-    static class Var extends Statements {
-        Var(Token name, Token type, Expressions initializer) {
+    static class VarStatement extends Statement {
+        VarStatement(Token name, Token type, Expression initializer) {
             this.name = name;
             this.type = type;
             this.initializer = initializer;
@@ -52,7 +52,7 @@ public abstract class Statements {
 
         final Token name;
         final Token type;
-        final Expressions initializer;
+        final Expression initializer;
 
         @Override
         <R> R accept(Visitor<R> visitor) throws Exception {
@@ -60,8 +60,8 @@ public abstract class Statements {
         }
     }
 
-    static class For extends Statements {
-        For(Token varIdent, Expressions left, Expressions right, List<Statements> body) {
+    static class ForStatement extends Statement {
+        ForStatement(Token varIdent, Expression left, Expression right, List<Statement> body) {
             this.varIdent = varIdent;
             this.left = left;
             this.right = right;
@@ -69,9 +69,9 @@ public abstract class Statements {
         }
 
         final Token varIdent;
-        final Expressions left;
-        final Expressions right;
-        final List<Statements> body;
+        final Expression left;
+        final Expression right;
+        final List<Statement> body;
 
         @Override
         <R> R accept(Visitor<R> visitor) throws Exception {
@@ -79,8 +79,8 @@ public abstract class Statements {
         }
     }
 
-    static class Read extends Statements {
-        Read(Token ident) {
+    static class ReadStatement extends Statement {
+        ReadStatement(Token ident) {
             this.ident = ident;
         }
 
@@ -92,12 +92,12 @@ public abstract class Statements {
         }
     }
 
-    static class Assert extends Statements {
-        Assert(Expressions expr) {
+    static class AssertStatement extends Statement {
+        AssertStatement(Expression expr) {
             this.expr = expr;
         }
 
-        final Expressions expr;
+        final Expression expr;
 
         @Override
         <R> R accept(Visitor<R> visitor) throws Exception {
