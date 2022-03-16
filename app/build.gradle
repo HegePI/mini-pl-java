@@ -21,7 +21,6 @@ dependencies {
 }
 
 application {
-    // Define the main class for the application.
     mainClass = 'miniPL.App'
 }
 
@@ -35,3 +34,33 @@ tasks.named('jar') {
     }
 }
 
+tasks.register('copyFiles', Copy) {
+
+    // archiveFileName = "miniPL.zip"
+    // destinationDirectory = layout.buildDirectory.dir("dist")
+
+    // destinationDir = layout.buildDirectory.dir("dist")
+
+    from (layout.buildDirectory.dir("libs")) {
+        into "lib/"
+    }
+    from (layout.buildDirectory.dir("scripts")) {
+        into "bin/"
+    }
+    from (layout.projectDirectory.dir("docs")) {
+        include "**/*.pdf"
+        into "docs/"
+    }
+    from (layout.projectDirectory.dir("src/main/java/miniPL")) {
+        into "src/"
+    }
+
+    into "build/miniPL"
+}
+
+tasks.register('zipFiles',Zip){
+    archiveFileName = "miniPL.zip"
+    destinationDirectory = layout.buildDirectory.dir("distributions")
+
+    from layout.buildDirectory.dir("miniPL")
+}
