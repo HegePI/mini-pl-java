@@ -147,7 +147,7 @@ public class Scanner {
         }
 
         if (isAtEnd()) {
-            printScanningError(this.line, "ended while reading");
+            printScanningError(this.line, "encountered unclosed string literal");
         }
         readChar();
 
@@ -205,8 +205,8 @@ public class Scanner {
     }
 
     private void printScanningError(int line2, String msg) {
-        System.err.println("Error on line: " + line2 + "\n" + msg);
-        System.exit(64);
+        System.err.println(String.format("Scanning error on line: " + line2 + "\n" + msg));
+        System.exit(1);
     }
 
     private static final Map<String, TokenType> keywords;

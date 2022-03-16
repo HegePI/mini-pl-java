@@ -22,20 +22,25 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
 
     public final Scanner sc = new Scanner(System.in);
 
-    public void interpret(List<Statement> statements) throws Exception {
+    public void interpret(List<Statement> statements) {
         try {
             for (Statement statement : statements) {
                 execute(statement);
             }
         } catch (Exception error) {
-            throw new Exception(error);
+            printInterpretError(error.getMessage());
         }
     }
 
     @Override
-    public Object visitBinaryExpression(BinaryExpression expr) throws Exception {
+    public Object visitBinaryExpression(BinaryExpression expr) {
         Object left = evaluate(expr.left);
         Object right = evaluate(expr.right);
+
+        if (left.getClass() != right.getClass()) {
+            printInterpretError("left and right expressions in binary expression are of different types%nleft: "
+                    + left.getClass().getSimpleName() + "%nright: " + right.getClass().getSimpleName());
+        }
 
         switch (expr.operator.type) {
             case MINUS:
@@ -63,7 +68,7 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
     }
 
     @Override
-    public Object visitGroupingExpression(GroupingExpression expr) throws Exception {
+    public Object visitGroupingExpression(GroupingExpression expr) {
         return evaluate(expr.expression);
     }
 
@@ -73,7 +78,7 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
     }
 
     @Override
-    public Object visitUnaryExpression(UnaryExpression expr) throws Exception {
+    public Object visitUnaryExpression(UnaryExpression expr) {
         Object right = evaluate(expr.right);
 
         switch (expr.operator.type) {
@@ -86,26 +91,26 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
     }
 
     @Override
-    public Object visitVariableExpression(VariableExpression expr) throws Exception {
+    public Object visitVariableExpression(VariableExpression expr) {
         return env.get(expr.name);
 
     }
 
     @Override
-    public Void visitExpressionStmt(ExpressionStatement stmt) throws Exception {
+    public Void visitExpressionStatement(ExpressionStatement stmt) {
         evaluate(stmt.expression);
         return null;
     }
 
     @Override
-    public Void visitPrintStmt(PrintStatement stmt) throws Exception {
+    public Void visitPrintStatement(PrintStatement stmt) {
         Object value = evaluate(stmt.expression);
-        System.out.print(stringify(value));
+        System.out.print(String.format(stringify(value)));
         return null;
     }
 
     @Override
-    public Void visitVarStmt(VarStatement stmt) throws Exception {
+    public Void visitVarStatement(VarStatement stmt) {
         Object value = null;
         if (stmt.initializer != null) {
             value = evaluate(stmt.initializer);
@@ -116,7 +121,7 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
     }
 
     @Override
-    public Void visitForStmt(ForStatement stmt) throws Exception {
+    public Void visitForStatement(ForStatement stmt) {
 
         int value = (int) evaluate(stmt.left);
         env.define(stmt.varIdent.lexeme, value);
@@ -132,7 +137,7 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
     }
 
     @Override
-    public Void visitReadStmt(ReadStatement stmt) throws Exception {
+    public Void visitReadStatement(ReadStatement stmt) {
 
         String input = sc.nextLine();
 
@@ -146,7 +151,7 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
     }
 
     @Override
-    public Void visitAssertStmt(AssertStatement stmt) throws Exception {
+    public Void visitAssertStatement(AssertStatement stmt) {
         if (isTruthy(evaluate(stmt.expr))) {
             System.out.println("True");
         } else {
@@ -156,16 +161,16 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
     }
 
     @Override
-    public Void visitAssignStatement(AssignStatement stmt) throws Exception {
+    public Void visitAssignStatement(AssignStatement stmt) {
         env.define(stmt.name.lexeme, evaluate(stmt.value));
         return null;
     }
 
-    private void execute(Statement statement) throws Exception {
+    private void execute(Statement statement) {
         statement.accept(this);
     }
 
-    private Object evaluate(Expression expr) throws Exception {
+    private Object evaluate(Expression expr) {
         return expr.accept(this);
     }
 
@@ -189,7 +194,7 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
         return a.equals(b);
     }
 
-    private boolean isInRange(Statement.ForStatement stmt) throws Exception {
+    private boolean isInRange(Statement.ForStatement stmt) {
         int value = (int) env.get(stmt.varIdent);
         int r = (int) evaluate(stmt.right);
         return value < r;
@@ -200,5 +205,11 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
             return "null";
         }
         return object.toString();
+    }
+
+    private void printInterpretError(String msg) {
+        System.out.println(String.format("Interpreting error: " + msg));
+        System.exit(1);
+
     }
 }

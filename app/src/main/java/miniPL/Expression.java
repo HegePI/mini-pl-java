@@ -3,15 +3,15 @@ package miniPL;
 public abstract class Expression {
     interface Visitor<V> {
 
-        V visitBinaryExpression(BinaryExpression expr) throws Exception;
+        V visitBinaryExpression(BinaryExpression expr);
 
-        V visitGroupingExpression(GroupingExpression expr) throws Exception;
+        V visitGroupingExpression(GroupingExpression expr);
 
         V visitLiteralExpression(LiteralExpression expr);
 
-        V visitUnaryExpression(UnaryExpression expr) throws Exception;
+        V visitUnaryExpression(UnaryExpression expr);
 
-        V visitVariableExpression(VariableExpression expr) throws Exception;
+        V visitVariableExpression(VariableExpression expr);
 
     }
 
@@ -23,7 +23,7 @@ public abstract class Expression {
         }
 
         @Override
-        <R> R accept(Visitor<R> visitor) throws Exception {
+        <R> R accept(Visitor<R> visitor) {
             return visitor.visitBinaryExpression(this);
         }
 
@@ -38,7 +38,7 @@ public abstract class Expression {
         }
 
         @Override
-        <R> R accept(Visitor<R> visitor) throws Exception {
+        <R> R accept(Visitor<R> visitor) {
             return visitor.visitGroupingExpression(this);
         }
 
@@ -65,7 +65,7 @@ public abstract class Expression {
         }
 
         @Override
-        <R> R accept(Visitor<R> visitor) throws Exception {
+        <R> R accept(Visitor<R> visitor) {
             return visitor.visitUnaryExpression(this);
         }
 
@@ -79,13 +79,13 @@ public abstract class Expression {
         }
 
         @Override
-        <R> R accept(Visitor<R> visitor) throws Exception {
+        <R> R accept(Visitor<R> visitor) {
             return visitor.visitVariableExpression(this);
         }
 
         final Token name;
     }
 
-    abstract <V> V accept(Visitor<V> visitor) throws Exception;
+    abstract <V> V accept(Visitor<V> visitor);
 
 }

@@ -10,23 +10,21 @@ public class Environment {
         this.variables.put(identifier, value);
     }
 
-    public Object get(Token identifier) throws Exception {
+    public Object get(Token identifier) {
         if (variables.containsKey(identifier.lexeme)) {
             return variables.get(identifier.lexeme);
         }
-        throw new Exception("Unknown variable");
+        printEnvironmentError("trying to fetch undefined variable");
+        return null;
     }
 
-    public void assign(Token name, Object value) throws Exception {
-        if (variables.containsKey(name.lexeme)) {
-            variables.put(name.lexeme, value);
-            return;
-        }
-        throw new Exception("Undefined variable '" + name.lexeme + "'.");
-    }
-
-    public boolean keyExists(Token name) throws Exception {
+    public boolean keyExists(Token name) {
         return this.variables.containsKey(name.lexeme);
 
+    }
+
+    private void printEnvironmentError(String msg) {
+        System.out.println(String.format("Environment/Variable error: " + msg));
+        System.exit(1);
     }
 }

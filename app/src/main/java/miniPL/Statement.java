@@ -4,19 +4,19 @@ import java.util.List;
 
 public abstract class Statement {
     interface Visitor<R> {
-        R visitExpressionStmt(ExpressionStatement stmt) throws Exception;
+        R visitExpressionStatement(ExpressionStatement stmt);
 
-        R visitPrintStmt(PrintStatement stmt) throws Exception;
+        R visitPrintStatement(PrintStatement stmt);
 
-        R visitVarStmt(VarStatement stmt) throws Exception;
+        R visitVarStatement(VarStatement stmt);
 
-        R visitForStmt(ForStatement stmt) throws Exception;
+        R visitForStatement(ForStatement stmt);
 
-        R visitReadStmt(ReadStatement stmt) throws Exception;
+        R visitReadStatement(ReadStatement stmt);
 
-        R visitAssertStmt(AssertStatement stmt) throws Exception;
+        R visitAssertStatement(AssertStatement stmt);
 
-        R visitAssignStatement(AssignStatement stmt) throws Exception;
+        R visitAssignStatement(AssignStatement stmt);
     }
 
     static class AssignStatement extends Statement {
@@ -29,7 +29,7 @@ public abstract class Statement {
         final Expression value;
 
         @Override
-        <R> R accept(Visitor<R> visitor) throws Exception {
+        <R> R accept(Visitor<R> visitor) {
             return visitor.visitAssignStatement(this);
         }
     }
@@ -42,8 +42,8 @@ public abstract class Statement {
         final Expression expression;
 
         @Override
-        <R> R accept(Visitor<R> visitor) throws Exception {
-            return visitor.visitExpressionStmt(this);
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitExpressionStatement(this);
         }
     }
 
@@ -55,8 +55,8 @@ public abstract class Statement {
         final Expression expression;
 
         @Override
-        <R> R accept(Visitor<R> visitor) throws Exception {
-            return visitor.visitPrintStmt(this);
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitPrintStatement(this);
         }
     }
 
@@ -72,8 +72,8 @@ public abstract class Statement {
         final Expression initializer;
 
         @Override
-        <R> R accept(Visitor<R> visitor) throws Exception {
-            return visitor.visitVarStmt(this);
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitVarStatement(this);
         }
     }
 
@@ -91,8 +91,8 @@ public abstract class Statement {
         final List<Statement> body;
 
         @Override
-        <R> R accept(Visitor<R> visitor) throws Exception {
-            return visitor.visitForStmt(this);
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitForStatement(this);
         }
     }
 
@@ -104,8 +104,8 @@ public abstract class Statement {
         final Token ident;
 
         @Override
-        <R> R accept(Visitor<R> visitor) throws Exception {
-            return visitor.visitReadStmt(this);
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitReadStatement(this);
         }
     }
 
@@ -117,11 +117,11 @@ public abstract class Statement {
         final Expression expr;
 
         @Override
-        <R> R accept(Visitor<R> visitor) throws Exception {
-            return visitor.visitAssertStmt(this);
+        <R> R accept(Visitor<R> visitor) {
+            return visitor.visitAssertStatement(this);
         }
 
     }
 
-    abstract <R> R accept(Visitor<R> visitor) throws Exception;
+    abstract <R> R accept(Visitor<R> visitor);
 }

@@ -11,7 +11,7 @@ public class Parser {
         this.tokens = tokens;
     }
 
-    public List<Statement> parse() throws Exception {
+    public List<Statement> parse() {
         List<Statement> l = new ArrayList<>();
         while (!isAtEnd()) {
             l.add(statement());
@@ -19,7 +19,7 @@ public class Parser {
         return l;
     }
 
-    private Statement statement() throws Exception {
+    private Statement statement() {
         if (match(TokenType.VAR)) {
             return varStatement();
         }
@@ -41,7 +41,7 @@ public class Parser {
         return expressionStatement();
     }
 
-    private Statement assignStatement() throws Exception {
+    private Statement assignStatement() {
         Token name = consume(TokenType.IDENTIFIER, "Expect identifier");
         consume(TokenType.ASSIGN, "Expect ':=' after identifier");
         Expression value = expression();
@@ -50,7 +50,7 @@ public class Parser {
         return new Statement.AssignStatement(name, value);
     }
 
-    private Statement varStatement() throws Exception {
+    private Statement varStatement() {
         Token name = consume(TokenType.IDENTIFIER, "Expect variable name");
         consume(TokenType.DDOT, "Expect ':' after variable identifier to define type");
 
@@ -73,7 +73,7 @@ public class Parser {
         return new Statement.VarStatement(name, type, initializer);
     }
 
-    private Statement assertStatement() throws Exception {
+    private Statement assertStatement() {
         consume(TokenType.LPAREN, "Expect '(' in assert statement");
         Expression expr = expression();
         consume(TokenType.RPAREN, "Unclosed '(', expect ')'");
@@ -82,21 +82,21 @@ public class Parser {
         return new Statement.AssertStatement(expr);
     }
 
-    private Statement readStatement() throws Exception {
+    private Statement readStatement() {
         Token ident = consume(TokenType.IDENTIFIER, "Expect identifier to store into red input value");
         consume(TokenType.SEMICOLON, "Expect ';' after read statement");
 
         return new Statement.ReadStatement(ident);
     }
 
-    private Statement printStatement() throws Exception {
+    private Statement printStatement() {
         Expression value = expression();
         consume(TokenType.SEMICOLON, "Expect ';' after value.");
 
         return new Statement.PrintStatement(value);
     }
 
-    private Statement forStatement() throws Exception {
+    private Statement forStatement() {
         Token varIdent = consume(TokenType.IDENTIFIER, "Expect identifier after \"for\" statement");
         consume(TokenType.IN, "Expect \"in\" after variable");
         Expression left = expression();
@@ -118,18 +118,18 @@ public class Parser {
 
     }
 
-    private Statement expressionStatement() throws Exception {
+    private Statement expressionStatement() {
         Expression expr = expression();
         consume(TokenType.SEMICOLON, "Expect ';' after expression.");
 
         return new Statement.ExpressionStatement(expr);
     }
 
-    private Expression expression() throws Exception {
+    private Expression expression() {
         return equality();
     }
 
-    private Expression equality() throws Exception {
+    private Expression equality() {
         Expression left = comparison();
         while (match(TokenType.NOTEQ, TokenType.EQ)) {
             Token op = previous();
@@ -140,7 +140,7 @@ public class Parser {
         return left;
     }
 
-    private Expression comparison() throws Exception {
+    private Expression comparison() {
         Expression left = term();
         while (match(TokenType.GREATER)) {
             Token op = previous();
@@ -151,7 +151,7 @@ public class Parser {
         return left;
     }
 
-    private Expression term() throws Exception {
+    private Expression term() {
         Expression left = factor();
         while (match(TokenType.MINUS, TokenType.PLUS)) {
             Token op = previous();
@@ -162,7 +162,7 @@ public class Parser {
         return left;
     }
 
-    private Expression factor() throws Exception {
+    private Expression factor() {
         Expression left = unary();
         while (match(TokenType.SLASH, TokenType.STAR)) {
             Token op = previous();
@@ -173,7 +173,7 @@ public class Parser {
         return left;
     }
 
-    private Expression unary() throws Exception {
+    private Expression unary() {
         if (match(TokenType.BANG, TokenType.MINUS)) {
             Token operator = previous();
             Expression right = unary();
@@ -183,7 +183,7 @@ public class Parser {
         return primary();
     }
 
-    private Expression primary() throws Exception {
+    private Expression primary() {
         if (match(TokenType.FALSE))
             return new Expression.LiteralExpression(false);
         if (match(TokenType.TRUE))
@@ -202,15 +202,17 @@ public class Parser {
         if (match(TokenType.IDENTIFIER)) {
             return new Expression.VariableExpression(previous());
         }
-        throw new Exception("WTF");
+        printParsingError("unknown token in primary");
+        return null;
     }
 
-    private Token consume(TokenType type, String message) throws Exception {
+    private Token consume(TokenType type, String message) {
         if (check(type)) {
             return readToken();
         }
 
-        throw new Exception(message);
+        printParsingError(message);
+        return null;
     }
 
     private boolean match(TokenType... types) {
@@ -252,12 +254,8 @@ public class Parser {
         return tokens.get(current);
     }
 
-    private boolean checkTypes(Token... tokens) throws Exception {
-        return false;
-    }
-
     private void printParsingError(String msg) {
-        System.err.println("Error: " + msg);
-        System.exit(64);
+        System.err.println(String.format("Parsing error: " + msg));
+        System.exit(1);
     }
 }

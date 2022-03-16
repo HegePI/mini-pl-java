@@ -1,1 +1,1 @@
-var a := "Hello, world!";
+var a : string := "Hello, world!";
