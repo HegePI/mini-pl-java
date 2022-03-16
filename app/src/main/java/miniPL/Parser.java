@@ -23,7 +23,7 @@ public class Parser {
         if (match(TokenType.VAR)) {
             return varStatement();
         }
-        if (peek().type == TokenType.IDENTIFIER) {
+        if (match(TokenType.IDENTIFIER)) {
             return assignStatement();
         }
         if (match(TokenType.FOR)) {
@@ -42,7 +42,8 @@ public class Parser {
     }
 
     private Statement assignStatement() {
-        Token name = consume(TokenType.IDENTIFIER, "Expect identifier");
+        // Match has consumed identifier
+        Token name = previous();
         consume(TokenType.ASSIGN, "Expect ':=' after identifier");
         Expression value = expression();
         consume(TokenType.SEMICOLON, "Expect ';' after statement");
