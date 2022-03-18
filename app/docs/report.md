@@ -15,7 +15,25 @@ works
 print "Hello,%neveryone!";
 ```
 
-Zip file contains four directories: bin/, lib/, src/ and docs/. Bin directory contains the script to run the interpreter and it uses generated .jar file in lib directory. Src directory contains .java source codes and docs directory contains the report. 
+Zip file contains four directories: bin/, lib/, src/ and docs/. Bin directory contains the script to run the interpreter and it uses generated .jar file in lib directory. Src directory contains .java source codes and docs directory contains the report.
+
+Rest of the project is in github. Run
+
+```
+git clone https://github.com/HegePI/mini-pl-java.git
+```
+
+to clone the project to your local machine and run
+
+```
+./gradlew build
+```
+or on windows
+```
+./gradlew.bat build
+```
+
+to build the interpreter.
 
 
 ## Running the interpreter
