@@ -42,7 +42,6 @@ public class Parser {
     }
 
     private Statement assignStatement() {
-        // Match has consumed identifier
         Token name = previous();
         consume(TokenType.ASSIGN, "Expect ':=' after identifier");
         Expression value = expression();
@@ -64,14 +63,14 @@ public class Parser {
             type = consume(TokenType.BOOL, "");
         }
 
-        Expression initializer = null;
+        Expression initialValue = null;
         if (match(TokenType.ASSIGN)) {
-            initializer = expression();
+            initialValue = expression();
         }
 
         consume(TokenType.SEMICOLON, "Expect ';' after variable declaration.");
 
-        return new Statement.VarStatement(name, type, initializer);
+        return new Statement.VarStatement(name, type, initialValue);
     }
 
     private Statement assertStatement() {
@@ -104,7 +103,7 @@ public class Parser {
         consume(TokenType.DOT, "Expect \"..\" to define range");
         consume(TokenType.DOT, "Expect \"..\" to define range");
         Expression right = expression();
-        consume(TokenType.DO, "Expect keyword \"for\"");
+        consume(TokenType.DO, "Expect keyword \"do\"");
 
         List<Statement> body = new ArrayList<Statement>();
         while (peek().type != TokenType.END) {
@@ -132,7 +131,7 @@ public class Parser {
 
     private Expression equality() {
         Expression left = comparison();
-        while (match(TokenType.NOTEQ, TokenType.EQ)) {
+        while (match(TokenType.NOTEQ, TokenType.EQ, TokenType.AND)) {
             Token op = previous();
             Expression right = comparison();
             left = new Expression.BinaryExpression(left, op, right);
@@ -144,7 +143,7 @@ public class Parser {
     private Expression comparison() {
         Expression left = term();
         while (match(TokenType.GREATER)) {
-            Token op = previous();
+            Token op = readToken();
             Expression right = term();
             left = new Expression.BinaryExpression(left, op, right);
         }
@@ -166,7 +165,7 @@ public class Parser {
     private Expression factor() {
         Expression left = unary();
         while (match(TokenType.SLASH, TokenType.STAR)) {
-            Token op = previous();
+            Token op = readToken();
             Expression right = unary();
             left = new Expression.BinaryExpression(left, op, right);
         }
@@ -176,7 +175,7 @@ public class Parser {
 
     private Expression unary() {
         if (match(TokenType.BANG, TokenType.MINUS)) {
-            Token operator = previous();
+            Token operator = readToken();
             Expression right = unary();
             return new Expression.UnaryExpression(operator, right);
         }
@@ -207,6 +206,14 @@ public class Parser {
         return null;
     }
 
+    /**
+     * Function, which checks, whether current token is same type as TokenType
+     * argument and returns the token if matches. Otherwise prints an error.
+     * 
+     * @param type    type argument
+     * @param message error message
+     * @return current token
+     */
     private Token consume(TokenType type, String message) {
         if (check(type)) {
             return readToken();
@@ -216,6 +223,14 @@ public class Parser {
         return null;
     }
 
+    /**
+     * Function that checks whether the current token is any of the provided
+     * TokenTypes in the list. If true, reads token, moves current to next token and
+     * return true. Otherwise returns false.
+     * 
+     * @param list types to be checked
+     * @return true if current tokne any of the types, otherwise false.
+     */
     private boolean match(TokenType... types) {
         for (TokenType type : types) {
             if (check(type)) {
@@ -227,15 +242,24 @@ public class Parser {
         return false;
     }
 
+    /**
+     * Returns previous token
+     * 
+     * @return token at current-1
+     */
     private Token previous() {
         return tokens.get(current - 1);
     }
 
+    /**
+     * reads current token, returns it and increases current by one.
+     * 
+     * @return token at current
+     */
     private Token readToken() {
         if (!isAtEnd()) {
             current++;
         }
-
         return previous();
     }
 
@@ -251,6 +275,11 @@ public class Parser {
         return peek().type == TokenType.EOF;
     }
 
+    /**
+     * returns token at current but doesn't increase current.
+     * 
+     * @return token at current
+     */
     private Token peek() {
         return tokens.get(current);
     }

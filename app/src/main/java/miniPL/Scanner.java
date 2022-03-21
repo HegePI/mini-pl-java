@@ -36,6 +36,9 @@ public class Scanner {
     private void scanToken() {
         char c = readChar();
         switch (c) {
+            case '&':
+                addToken(TokenType.AND);
+                break;
             case '(':
                 addToken(TokenType.LPAREN);
                 break;

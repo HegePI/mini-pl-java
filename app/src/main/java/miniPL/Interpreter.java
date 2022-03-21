@@ -63,7 +63,14 @@ public class Interpreter implements Expression.Visitor<Object>, Statement.Visito
                 return !isEqual(left, right);
             case EQ:
                 return isEqual(left, right);
+            case AND:
+                try {
+                    return isTruthy((boolean) left) && isTruthy((boolean) right);
+                } catch (Exception e) {
+                    printInterpretError("'&' can be only applied between boolean values");
+                }
         }
+
         return null;
     }
 

@@ -1,10 +1,18 @@
-print "Give a number";
-var n : int;
-read n;
-var v : int := 1;
-var i : int;
-for i in 1..n do
-    v := v * i;
-end for;
-print "The result is: ";
-print v;
+print "How many: "; 
+read count; 
+ 
+var first: int := 0; 
+var second: int := 1; 
+var y: int; 
+ 
+print first; 
+print "%n"; 
+for x in 0..count-1 do 
+    print second; 
+    print "%n"; 
+    y := second; 
+    second := second + first; 
+    first := y; 
+end for; 
+ 
+assert (first = second);

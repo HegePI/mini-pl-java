@@ -9,7 +9,7 @@
             "name": "Launch Current File",
             "request": "launch",
             "mainClass": "${file}",
-            "args": "/home/heikki/koulu/compilers/mini-pl-java/debug-test.mpl"
+            "args": "debug-test.mpl"
         },
         {
             "type": "java",

@@ -30,7 +30,7 @@ public class InterpreterTests {
 
     @Test
     public void assertInterpretetation() throws Exception {
-        String content = Files.readString(Path.of(TEST_FILE));
+        String content = Files.readString(Path.of(ASSERT_TEST_FILE));
 
         Scanner sc = new Scanner(content);
 
