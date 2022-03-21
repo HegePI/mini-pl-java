@@ -53,7 +53,9 @@ miniPL/bin/app.bat <FILE_NAME>
 Note: language doesn't have '&' operator, forgot to implement...
 
 ```js
-stmtList => stmt";" (stmt";")*
+program => (declaration";")+
+declaration => (stmtList";")+
+stmtList => (stmt";")+
 stmt => assertStmt | assignStmt | forStmt | printStmt | readStmt | varStmt | expr
 
 assertStmt => 'assert' '('expr')'';'
