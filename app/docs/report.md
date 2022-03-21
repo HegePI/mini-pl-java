@@ -74,6 +74,8 @@ bool => 'true' | 'false'
 number => [0-9]+
 ```
 
+<div style="page-break-after: always;"></div>
+
 ## AST
 
 Program
