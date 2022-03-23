@@ -29,7 +29,7 @@ miniPL interpreter written in Java.
 
 - [ ] Symbol/keywords
   - [ ] '%'
-  - [ ] '<>', '<=', '>='
+  - [ ] '<>', '>', '<=', '>='
   - [ ] '[', ']'
   - [ ] ','
   - [ ] "and", "or", "not"
