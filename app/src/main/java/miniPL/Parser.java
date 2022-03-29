@@ -42,25 +42,25 @@ public class Parser {
     }
 
     private Statement assignStatement() {
-        Token name = previous();
-        consume(TokenType.ASSIGN, "Expect ':=' after identifier");
+        Token name = getPreviousToken();
+        consumeToken(TokenType.ASSIGN, "Expect ':=' after identifier");
         Expression value = expression();
-        consume(TokenType.SEMICOLON, "Expect ';' after statement");
+        consumeToken(TokenType.SEMICOLON, "Expect ';' after statement");
 
         return new Statement.AssignStatement(name, value);
     }
 
     private Statement varStatement() {
-        Token name = consume(TokenType.IDENTIFIER, "Expect variable name");
-        consume(TokenType.DDOT, "Expect ':' after variable identifier to define type");
+        Token name = consumeToken(TokenType.IDENTIFIER, "Expect variable name");
+        consumeToken(TokenType.DDOT, "Expect ':' after variable identifier to define type");
 
         Token type = null;
         if (getCurrentToken().type == TokenType.INT) {
-            type = consume(TokenType.INT, "");
+            type = consumeToken(TokenType.INT, "no int token found");
         } else if (getCurrentToken().type == TokenType.STRING) {
-            type = consume(TokenType.STRING, "");
+            type = consumeToken(TokenType.STRING, "no string token found");
         } else if (getCurrentToken().type == TokenType.BOOL) {
-            type = consume(TokenType.BOOL, "");
+            type = consumeToken(TokenType.BOOL, "no bool token found");
         }
 
         Expression initialValue = null;
@@ -68,51 +68,51 @@ public class Parser {
             initialValue = expression();
         }
 
-        consume(TokenType.SEMICOLON, "Expect ';' after variable declaration.");
+        consumeToken(TokenType.SEMICOLON, "Expect ';' after variable declaration.");
 
         return new Statement.VarStatement(name, type, initialValue);
     }
 
     private Statement assertStatement() {
-        consume(TokenType.LPAREN, "Expect '(' in assert statement");
+        consumeToken(TokenType.LPAREN, "Expect '(' in assert statement");
         Expression expr = expression();
-        consume(TokenType.RPAREN, "Unclosed '(', expect ')'");
-        consume(TokenType.SEMICOLON, "Expect ';' after assert statement");
+        consumeToken(TokenType.RPAREN, "Unclosed '(', expect ')'");
+        consumeToken(TokenType.SEMICOLON, "Expect ';' after assert statement");
 
         return new Statement.AssertStatement(expr);
     }
 
     private Statement readStatement() {
-        Token ident = consume(TokenType.IDENTIFIER, "Expect identifier to store into red input value");
-        consume(TokenType.SEMICOLON, "Expect ';' after read statement");
+        Token ident = consumeToken(TokenType.IDENTIFIER, "Expect identifier to store into red input value");
+        consumeToken(TokenType.SEMICOLON, "Expect ';' after read statement");
 
         return new Statement.ReadStatement(ident);
     }
 
     private Statement printStatement() {
         Expression value = expression();
-        consume(TokenType.SEMICOLON, "Expect ';' after value.");
+        consumeToken(TokenType.SEMICOLON, "Expect ';' after value.");
 
         return new Statement.PrintStatement(value);
     }
 
     private Statement forStatement() {
-        Token varIdent = consume(TokenType.IDENTIFIER, "Expect identifier after \"for\" statement");
-        consume(TokenType.IN, "Expect \"in\" after variable");
+        Token varIdent = consumeToken(TokenType.IDENTIFIER, "Expect identifier after \"for\" statement");
+        consumeToken(TokenType.IN, "Expect \"in\" after variable");
         Expression left = expression();
-        consume(TokenType.DOT, "Expect \"..\" to define range");
-        consume(TokenType.DOT, "Expect \"..\" to define range");
+        consumeToken(TokenType.DOT, "Expect \"..\" to define range");
+        consumeToken(TokenType.DOT, "Expect \"..\" to define range");
         Expression right = expression();
-        consume(TokenType.DO, "Expect keyword \"do\"");
+        consumeToken(TokenType.DO, "Expect keyword \"do\"");
 
         List<Statement> body = new ArrayList<Statement>();
         while (getCurrentToken().type != TokenType.END) {
             body.add(statement());
         }
 
-        consume(TokenType.END, "Expect \"end for\" to end for loop");
-        consume(TokenType.FOR, "Expect \"end for\" to end for loop");
-        consume(TokenType.SEMICOLON, "Expect ';' after statement");
+        consumeToken(TokenType.END, "Expect \"end for\" to end for loop");
+        consumeToken(TokenType.FOR, "Expect \"end for\" to end for loop");
+        consumeToken(TokenType.SEMICOLON, "Expect ';' after statement");
 
         return new Statement.ForStatement(varIdent, left, right, body);
 
@@ -120,7 +120,7 @@ public class Parser {
 
     private Statement expressionStatement() {
         Expression expr = expression();
-        consume(TokenType.SEMICOLON, "Expect ';' after expression.");
+        consumeToken(TokenType.SEMICOLON, "Expect ';' after expression.");
 
         return new Statement.ExpressionStatement(expr);
     }
@@ -132,7 +132,7 @@ public class Parser {
     private Expression equality() {
         Expression left = comparison();
         while (match(TokenType.NOTEQ, TokenType.EQ, TokenType.AND)) {
-            Token op = previous();
+            Token op = getPreviousToken();
             Expression right = comparison();
             left = new Expression.BinaryExpression(left, op, right);
         }
@@ -154,7 +154,7 @@ public class Parser {
     private Expression term() {
         Expression left = factor();
         while (match(TokenType.MINUS, TokenType.PLUS)) {
-            Token op = previous();
+            Token op = getPreviousToken();
             Expression right = factor();
             left = new Expression.BinaryExpression(left, op, right);
         }
@@ -189,18 +189,18 @@ public class Parser {
         if (match(TokenType.TRUE))
             return new Expression.LiteralExpression(true);
         if (match(TokenType.NUMBER, TokenType.STRING)) {
-            return new Expression.LiteralExpression(previous().literal);
+            return new Expression.LiteralExpression(getPreviousToken().literal);
         }
         if (match(TokenType.STRINGLITERAL)) {
-            return new Expression.LiteralExpression(previous().literal);
+            return new Expression.LiteralExpression(getPreviousToken().literal);
         }
         if (match(TokenType.LPAREN)) {
             Expression expr = expression();
-            consume(TokenType.RPAREN, "Expect ')' after expression.");
+            consumeToken(TokenType.RPAREN, "Expect ')' after expression.");
             return new Expression.GroupingExpression(expr);
         }
         if (match(TokenType.IDENTIFIER)) {
-            return new Expression.VariableExpression(previous());
+            return new Expression.VariableExpression(getPreviousToken());
         }
         printParsingError("unknown token in primary", getCurrentToken().line);
         return null;
@@ -214,7 +214,7 @@ public class Parser {
      * @param message error message
      * @return current token
      */
-    private Token consume(TokenType type, String message) {
+    private Token consumeToken(TokenType type, String message) {
         if (check(type)) {
             return readToken();
         }
@@ -247,7 +247,7 @@ public class Parser {
      * 
      * @return token at current-1
      */
-    private Token previous() {
+    private Token getPreviousToken() {
         return this.tokens.get(current - 1);
     }
 
@@ -260,7 +260,7 @@ public class Parser {
         if (!isAtEnd()) {
             current++;
         }
-        return previous();
+        return getPreviousToken();
     }
 
     private boolean check(TokenType type) {
