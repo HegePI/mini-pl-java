@@ -1,6 +1,7 @@
 package miniPL;
 
 import java.util.List;
+import java.util.Scanner;
 
 import miniPL.Expression.BinaryExpression;
 import miniPL.Expression.GroupingExpression;
@@ -14,7 +15,6 @@ import miniPL.Statement.ForStatement;
 import miniPL.Statement.PrintStatement;
 import miniPL.Statement.ReadStatement;
 import miniPL.Statement.VarStatement;
-import java.util.Scanner;
 
 public class Interpreter implements Expression.Visitor<Object>, Statement.Visitor<Void> {
 

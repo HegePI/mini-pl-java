@@ -55,11 +55,11 @@ public class Parser {
         consume(TokenType.DDOT, "Expect ':' after variable identifier to define type");
 
         Token type = null;
-        if (peek().type == TokenType.INT) {
+        if (getCurrentToken().type == TokenType.INT) {
             type = consume(TokenType.INT, "");
-        } else if (peek().type == TokenType.STRING) {
+        } else if (getCurrentToken().type == TokenType.STRING) {
             type = consume(TokenType.STRING, "");
-        } else if (peek().type == TokenType.BOOL) {
+        } else if (getCurrentToken().type == TokenType.BOOL) {
             type = consume(TokenType.BOOL, "");
         }
 
@@ -106,7 +106,7 @@ public class Parser {
         consume(TokenType.DO, "Expect keyword \"do\"");
 
         List<Statement> body = new ArrayList<Statement>();
-        while (peek().type != TokenType.END) {
+        while (getCurrentToken().type != TokenType.END) {
             body.add(statement());
         }
 
@@ -202,7 +202,7 @@ public class Parser {
         if (match(TokenType.IDENTIFIER)) {
             return new Expression.VariableExpression(previous());
         }
-        printParsingError("unknown token in primary");
+        printParsingError("unknown token in primary", getCurrentToken().line);
         return null;
     }
 
@@ -219,7 +219,7 @@ public class Parser {
             return readToken();
         }
 
-        printParsingError(message);
+        printParsingError(message, getCurrentToken().line);
         return null;
     }
 
@@ -248,7 +248,7 @@ public class Parser {
      * @return token at current-1
      */
     private Token previous() {
-        return tokens.get(current - 1);
+        return this.tokens.get(current - 1);
     }
 
     /**
@@ -268,11 +268,11 @@ public class Parser {
             return false;
         }
 
-        return peek().type == type;
+        return getCurrentToken().type == type;
     }
 
     private boolean isAtEnd() {
-        return peek().type == TokenType.EOF;
+        return getCurrentToken().type == TokenType.EOF;
     }
 
     /**
@@ -280,12 +280,12 @@ public class Parser {
      * 
      * @return token at current
      */
-    private Token peek() {
+    private Token getCurrentToken() {
         return tokens.get(current);
     }
 
-    private void printParsingError(String msg) {
-        System.err.println(String.format("Parsing error: " + msg));
+    private void printParsingError(String msg, int line) {
+        System.err.println(String.format("Parsing error on line " + line + " : " + msg));
         System.exit(1);
     }
 }
