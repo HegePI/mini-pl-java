@@ -45,3 +45,4 @@ miniPL interpreter written in Java.
 | --------- | ----- | ---------------------------------------------- |
 | 21.3.2022 | 1h    | refactoring compilers project, added '&' token |
 | 23.3.2022 | 1h    | README updated, todo list created              |
+| 29.3.2022 | 1h    | renaming, declarations                         |
